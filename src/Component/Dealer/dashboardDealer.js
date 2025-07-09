@@ -78,7 +78,7 @@ export const DealerTable = (darkMode) => {
   };
 
   return (
-    <div className="flex flex-col p-5 bg-white rounded-lg shadow-md">
+    <div className="flex flex-col p-5 bg-white rounded-lg shadow-md w-full mx-auto xl:max-w-[1200px]">
       {/* Summary Section */}
       <div className="flex justify-between items-center flex-wrap mb-2">
         <p className="flex-1 text-[3vw] sm:text-[2.5vw] md:text-[2vw] lg:text-xl font-bold line-clamp-1">
@@ -150,7 +150,7 @@ export const DealerTable = (darkMode) => {
       </div>
 
       {/* Table Section */}
-      <div className="overflow-x-auto w-full max-w-[1000px] ">
+      <div className="overflow-x-auto w-full max-w-[100%] ">
         <table className="w-full border-collapse mt-3">
           <thead>
             <tr>

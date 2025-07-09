@@ -2,7 +2,7 @@
 export const DealerSearch = () => {
   return (
     <>
-      <div className="m-1 p-4">
+      <div className="m-1 p-4 w-full mx-auto xl:max-w-[1200px]">
         {/* Upper Filter */}
         <div className="flex justify-between items-center mb-5">
           <div className="text-2xl font-bold m-0">

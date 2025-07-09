@@ -37,7 +37,7 @@ const Header = ({ open, setOpen, darkMode, setDarkMode }) => {
       className={`
       sticky z-10 rounded-md
       ${scrolled ? "top-2 md:top-3 xl:top-4" : "top-0"}
-      md:ml-[16.5rem] xl:ml-[19rem] 
+      md:ml-[16.5rem] xl:ml-[19rem] xl:mr-[1rem]
       px-4 py-3 font-[Poppins] 
       flex items-center justify-between
       transition-all duration-300
