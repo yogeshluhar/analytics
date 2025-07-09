@@ -1,11 +1,22 @@
 import { Link, useLocation } from "react-router-dom";
-import { Home, Table, CreditCard, User, LogIn, UserPlus } from "lucide-react";
+import {
+  Home,
+  Table,
+  CreditCard,
+  User,
+  LogIn,
+  UserPlus,
+  Briefcase,
+  Store,
+} from "lucide-react";
 
 const menuItems = [
   { name: "Dashboard", icon: Home, path: "/" },
   { name: "Tables", icon: Table, path: "/tables" },
   { name: "Billing", icon: CreditCard, path: "/billing" },
   { name: "Profile", icon: User, path: "/profile" },
+  { name: "Dealer", icon: Briefcase, path: "/dealer" },
+  { name: "Retailer", icon: Store, path: "/retailer" },
   { name: "Sign In", icon: LogIn, path: "/signin" },
   { name: "Sign Up", icon: UserPlus, path: "/signup" },
 ];
@@ -31,10 +42,11 @@ const Sidebar = ({ open, setOpen, darkMode }) => {
           transition-all duration-300 ease-in-out
           ${open ? "translate-x-[20px]" : "-translate-x-full"}
           md:translate-x-0 md:left-5
-              ${darkMode
-            ? "bg-white/5 text-white shadow-[0_8px_30px_rgba(0,0,0,0.1)] backdrop-blur-xl"
-            : "backdrop-blur-xl bg-white/70 md:bg-white/50 xl:bg-white/50 shadow-[0_4px_8px_rgba(0,0,0,0.2)] transition-all"
-          }
+              ${
+                darkMode
+                  ? "bg-white/5 text-white shadow-[0_8px_30px_rgba(0,0,0,0.1)] backdrop-blur-xl"
+                  : "backdrop-blur-xl bg-white/70 md:bg-white/50 xl:bg-white/50 shadow-[0_4px_8px_rgba(0,0,0,0.2)] transition-all"
+              }
         `}
       >
         <h2
@@ -54,8 +66,8 @@ const Sidebar = ({ open, setOpen, darkMode }) => {
                 ? "bg-purple-700 text-white font-semibold"
                 : "text-gray-400 hover:bg-purple-700 hover:text-white font-medium"
               : isActive
-                ? "bg-[rgba(0,103,216,0.8)] text-white font-semibold"
-                : "text-[#1A237E] hover:bg-[rgba(140,206,247,0.47)] font-medium";
+              ? "bg-[rgba(0,103,216,0.8)] text-white font-semibold"
+              : "text-[#1A237E] hover:bg-[rgba(140,206,247,0.47)] font-medium";
 
             return (
               <li key={index}>

@@ -17,6 +17,9 @@ import Profile from "./Component/Profile/profile";
 import SignUp from "./Component/Auth/SignUp";
 import SignIn from "./Component/Auth/Signin";
 import VerifyOTP from "./Component/Auth/VerifyOtp";
+import Dashboard from "./Component/DashBoard/dashboard";
+import Dealer from "./Component/Dealer/dealer";
+import Retailer from "./Component/Retailer/retailer";
 
 function App() {
   const [open, setOpen] = useState(false);
@@ -48,7 +51,7 @@ function App() {
             setDarkMode={setDarkMode}
           />
           <Routes>
-            <Route path="/" element={<Grid darkMode={darkMode} />} />
+            <Route path="/" element={<Dashboard />} />
             <Route path="/tables" element={<Tables darkMode={darkMode} />} />
             <Route path="/billing" element={<Billing darkMode={darkMode} />} />
             <Route path="/profile" element={<Profile darkMode={darkMode} />} />
@@ -66,6 +69,8 @@ function App() {
                 <VerifyOTP darkMode={darkMode} setDarkMode={setDarkMode} />
               }
             />
+            <Route path="/dealer" element={<Dealer darkMode={darkMode} />} />
+            <Route path="/retailer" element={<Retailer darkMode={darkMode} />} />
           </Routes>
         </div>
       </div>

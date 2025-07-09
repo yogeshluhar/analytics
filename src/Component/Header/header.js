@@ -7,6 +7,8 @@ const menuItems = [
   { name: "Tables", path: "/tables" },
   { name: "Billing", path: "/billing" },
   { name: "Profile", path: "/profile" },
+  { name: "Dealer", path: "/dealer" },
+  { name: "Retailer", path: "/retailer" },
   { name: "Sign In", path: "/signin" },
   { name: "Sign Up", path: "/signup" },
 ];
