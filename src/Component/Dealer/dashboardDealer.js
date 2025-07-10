@@ -1,61 +1,45 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
-// https://api.mobilexecure.com/dealers/?page=&sort=-createddate&size=10&search=&dealer=4000782&admin
 
-export const DealerTable = (darkMode) => {
-  const [data, setData] = useState([]);
-  const [PageSize, setPageSize] = useState(10);
+export const DealerTable = ({ darkMode, searchTerm }) => {
+  const [allData, setAllData] = useState([]);
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pagination, setPagination] = useState({
-    page: 1,
-    totalPages: 1,
-    first: null,
-    last: null,
-    next: null,
-    previous: null,
-  });
 
-  const fetchData = async (page = 1, size = PageSize) => {
+  const fetchAllData = async () => {
     try {
       const res = await axios.get("https://api.mobilexecure.com/vendors/", {
         params: {
-          page,
-          size,
+          page: 1,
+          size: 10000, // fetch all
           sort: "-createddate",
           dealer: 4000782,
           admin: true,
         },
       });
-
-      const responseData = res.data;
-
-      setData(responseData.items || []);
-      setPagination({
-        page,
-        totalPages: responseData.total_pages || 1,
-        first: responseData.first,
-        last: responseData.last,
-        next: responseData.next,
-        previous: responseData.previous,
-      });
+      setAllData(res.data.items || []);
     } catch (err) {
       console.error("Error fetching data:", err);
     }
   };
 
-  const handlePageClick = (page) => {
-    if (page) {
-      fetchData(page);
-    }
-  };
+  useEffect(() => {
+    fetchAllData();
+  }, []);
 
   useEffect(() => {
-    fetchData(currentPage, PageSize);
-  }, [currentPage, PageSize]);
+    setCurrentPage(1);
+  }, [searchTerm]);
 
   const handlePageSizeChange = (e) => {
     setPageSize(Number(e.target.value));
     setCurrentPage(1);
+  };
+
+  const handlePageClick = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   const getButtonClasses = (isActive, disabled = false) => {
@@ -77,72 +61,71 @@ export const DealerTable = (darkMode) => {
     `;
   };
 
+  const filteredData = allData.filter((row) =>
+    Object.values(row).some((val) =>
+      String(val).toLowerCase().includes(searchTerm.text.toLowerCase())
+    )
+  );
+
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const paginatedData = filteredData.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
-    <div className="flex flex-col p-5 bg-white rounded-lg shadow-md w-full mx-auto xl:max-w-[1200px]">
-      {/* Summary Section */}
+    <div className="flex flex-col p-5 bg-white rounded-lg shadow-md w-full mx-auto xl:max-w-[1000px] 2xl:max-w-screen-2xl">
+      {/* Header & Pagination */}
       <div className="flex justify-between items-center flex-wrap mb-2">
         <p className="flex-1 text-[3vw] sm:text-[2.5vw] md:text-[2vw] lg:text-xl font-bold line-clamp-1">
           Dealer Summary
         </p>
         <div className="flex items-center gap-2">
-          <label
-            htmlFor="show-selector"
-            className="text-sm text-gray-600 font-semibold"
-          >
-            Show
-          </label>
+          <label className="text-sm text-gray-600 font-semibold">Show</label>
           <select
-            name="show"
-            value={PageSize}
+            value={pageSize}
             onChange={handlePageSizeChange}
-            className="h-9 rounded-lg appearance-none bg-gray-200 border border-gray-300 px-2.5 text-gray-800 w-[120px] bg-no-repeat focus:outline-none focus:border-transparent"
-            style={{
-              backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='black' height='14' viewBox='0 0 24 24' width='14' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>")`,
-              backgroundPosition: "right 5px center",
-              backgroundSize: "18px",
-            }}
+            className="h-9 rounded-lg appearance-none bg-gray-200 border border-gray-300 px-2.5 text-gray-800 w-[120px] focus:outline-none"
           >
             <option value="5">5</option>
             <option value="10">10</option>
             <option value="20">20</option>
           </select>
-          <button className="h-[2.2rem] border-none bg-purple-700 px-4 rounded-lg  text-white text-[13px] font-semibold shadow-md hover:shadow-lg transition">
+          <button
+            className={`h-[2.2rem] border-none px-4 rounded-lg text-white text-[13px] font-semibold shadow-md hover:shadow-lg transition
+             ${darkMode ? "bg-purple-700" : "bg-[rgba(0,103,216,0.8)]"}
+             `}
+          >
             Dispatch
           </button>
         </div>
-
-        {/* Pagination */}
         <div className="ml-2 flex flex-wrap items-center justify-center gap-1.5 mt-4 sm:mt-0">
           <button
-            onClick={() => handlePageClick(pagination.first)}
-            disabled={!pagination.first}
-            className={getButtonClasses(false, !pagination.first)}
+            onClick={() => handlePageClick(1)}
+            disabled={currentPage === 1}
+            className={getButtonClasses(false, currentPage === 1)}
           >
             First
           </button>
-
           <button
-            onClick={() => handlePageClick(pagination.previous)}
-            disabled={!pagination.previous}
-            className={getButtonClasses(false, !pagination.previous)}
+            onClick={() => handlePageClick(currentPage - 1)}
+            disabled={currentPage === 1}
+            className={getButtonClasses(false, currentPage === 1)}
           >
             Previous
           </button>
-
-          <div className={getButtonClasses(true, false)}>{pagination.page}</div>
-
+          <div className={getButtonClasses(true)}>{currentPage}</div>
           <button
-            onClick={() => handlePageClick(pagination.next)}
-            disabled={!pagination.next}
-            className={getButtonClasses(false, !pagination.next)}
+            onClick={() => handlePageClick(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className={getButtonClasses(false, currentPage === totalPages)}
           >
             Next
           </button>
-
           <button
-            onClick={() => handlePageClick(pagination.last)}
-            disabled={!pagination.last}
-            className={getButtonClasses(false, !pagination.last)}
+            onClick={() => handlePageClick(totalPages)}
+            disabled={currentPage === totalPages}
+            className={getButtonClasses(false, currentPage === totalPages)}
           >
             Last
           </button>
@@ -150,7 +133,7 @@ export const DealerTable = (darkMode) => {
       </div>
 
       {/* Table Section */}
-      <div className="overflow-x-auto w-full max-w-[100%] ">
+      <div className="overflow-x-auto w-full max-w-[100%]">
         <table className="w-full border-collapse mt-3">
           <thead>
             <tr>
@@ -186,8 +169,8 @@ export const DealerTable = (darkMode) => {
             </tr>
           </thead>
           <tbody>
-            {data.length > 0 ? (
-              data.map((row, index) => (
+            {paginatedData.length > 0 ? (
+              paginatedData.map((row, index) => (
                 <tr key={row.id} className="bg-gray-50 hover:bg-gray-100">
                   <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
                     <div className="flex items-center gap-2">

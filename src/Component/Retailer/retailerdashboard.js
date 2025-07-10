@@ -1,9 +1,9 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 
-export const RetailerTable = ({ darkMode }) => {
+export const RetailerTable = ({ darkMode, searchTerm }) => {
   const [data, setData] = useState([]);
-  const [pageSize, setPageSize] = useState(10); 
+  const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
   const [pagination, setPagination] = useState({
@@ -14,6 +14,23 @@ export const RetailerTable = ({ darkMode }) => {
     next: null,
     previous: null,
   });
+  const getCategoryKey = (category) => {
+    const map = {
+      "Phone Number": "phoneNumber",
+      "Owner Name": "ownerName",
+      Location: "location",
+      PAN: "PAN",
+      Aadhar: "Aadhar",
+      GST: "gst",
+      Email: "email",
+      Pincode: "pincode",
+      Units: "units",
+      Remaining: "remaining",
+      "Vendor Code": "vendorCode",
+      "Created Date": "createddate",
+    };
+    return map[category] || null;
+  };
 
   const fetchData = async (page = 1, size = pageSize) => {
     try {
@@ -27,16 +44,47 @@ export const RetailerTable = ({ darkMode }) => {
         },
       });
 
-      const responseData = res.data;
+      let items = res.data.items || [];
 
-      setData(responseData.items || []);
+      if (searchTerm?.text) {
+        const lower = searchTerm.text.toLowerCase();
+        items = items.filter((item) => {
+          const categoryKey = getCategoryKey(searchTerm.category);
+          if (categoryKey && item[categoryKey]) {
+            return String(item[categoryKey]).toLowerCase().includes(lower);
+          } else {
+            return (
+              item.ownerName?.toLowerCase().includes(lower) ||
+              item.phoneNumber?.toLowerCase().includes(lower) ||
+              item.email?.toLowerCase().includes(lower) ||
+              item.location?.toLowerCase().includes(lower)
+            );
+          }
+        });
+      }
+
+      if (searchTerm?.status) {
+        items = items.filter(
+          (item) => String(item.status) === searchTerm.status
+        );
+      }
+
+      console.log("Fetching data with:", {
+        page,
+        size,
+        search: searchTerm?.text,
+        category: searchTerm?.category,
+        status: searchTerm?.status,
+      });
+
+      setData(items);
       setPagination({
         page,
-        totalPages: responseData.total_pages || 1,
-        first: responseData.first,
-        last: responseData.last,
-        next: responseData.next,
-        previous: responseData.previous,
+        totalPages: res.data.total_pages || 1,
+        first: res.data.first,
+        last: res.data.last,
+        next: res.data.next,
+        previous: res.data.previous,
       });
     } catch (err) {
       console.error("Error fetching data:", err);
@@ -44,8 +92,12 @@ export const RetailerTable = ({ darkMode }) => {
   };
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm]);
+
+  useEffect(() => {
     fetchData(currentPage, pageSize);
-  }, [currentPage, pageSize]);
+  }, [currentPage, pageSize, searchTerm]);
 
   const handlePageClick = (page) => {
     if (page) {
@@ -55,7 +107,7 @@ export const RetailerTable = ({ darkMode }) => {
 
   const handlePageSizeChange = (e) => {
     setPageSize(Number(e.target.value));
-    setCurrentPage(1); 
+    setCurrentPage(1);
   };
 
   const getButtonClasses = (isActive, disabled = false) => {
@@ -78,18 +130,21 @@ export const RetailerTable = ({ darkMode }) => {
   };
 
   return (
-    <div className="flex flex-col p-5 bg-white rounded-lg shadow-md w-full mx-auto xl:max-w-[1200px] ">
+    <div className="flex flex-col p-5 bg-white rounded-lg shadow-md w-full mx-auto xl:max-w-[1000px] 2xl:max-w-screen-2xl">
       <div className="flex justify-between items-center flex-wrap mb-2">
         <p className="flex-1 text-[3vw] sm:text-[2.5vw] md:text-[2vw] lg:text-xl font-bold line-clamp-1">
           Dealer Summary
         </p>
         <div className="flex items-center gap-2">
-          <label htmlFor="show-selector" className="text-sm text-gray-600 font-semibold">
+          <label
+            htmlFor="show-selector"
+            className="text-sm text-gray-600 font-semibold"
+          >
             Show
           </label>
           <select
             name="show"
-            value={pageSize} 
+            value={pageSize}
             onChange={handlePageSizeChange} // ✅ Update on change
             className="h-9 rounded-lg appearance-none bg-gray-200 border border-gray-300 px-2.5 text-gray-800 w-[120px] bg-no-repeat focus:outline-none focus:border-transparent"
             style={{
@@ -125,9 +180,7 @@ export const RetailerTable = ({ darkMode }) => {
             Previous
           </button>
 
-          <div className={getButtonClasses(true, false)}>
-            {pagination.page}
-          </div>
+          <div className={getButtonClasses(true, false)}>{pagination.page}</div>
 
           <button
             onClick={() => handlePageClick(pagination.next)}
@@ -233,7 +286,10 @@ export const RetailerTable = ({ darkMode }) => {
               ))
             ) : (
               <tr>
-                <td colSpan={13} className="px-4 py-3 border-b border-gray-300 text-center text-sm">
+                <td
+                  colSpan={13}
+                  className="px-4 py-3 border-b border-gray-300 text-center text-sm"
+                >
                   No data found.
                 </td>
               </tr>
