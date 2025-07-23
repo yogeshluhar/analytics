@@ -32,7 +32,11 @@ export const RetailerSearch = ({ darkMode, onSearch }) => {
             <h4 style={{ margin: "0px", color: "white" }}>Order</h4>
           </div>
           <div>
-            <button className="h-10 bg-purple-700  text-white font-semibold border-none shadow-md cursor-pointer  flex items-center gap-3 px-4 py-3 rounded-lg w-full ">
+            <button
+              className={`h-10  text-white font-semibold border-none shadow-md cursor-pointer  flex items-center gap-3 px-4 py-3 rounded-lg w-full
+                   ${darkMode ? "bg-purple-700" : "bg-[rgba(0,103,216,0.8)]"}
+              `}
+            >
               create order
             </button>
           </div>
@@ -49,7 +53,7 @@ export const RetailerSearch = ({ darkMode, onSearch }) => {
               value={searchInput}
               onChange={handleSearchChange}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 text-base transition
-             focus:outline-none focus:border-black"
+              focus:outline-none focus:border-black"
             />
           </div>
 
@@ -61,7 +65,7 @@ export const RetailerSearch = ({ darkMode, onSearch }) => {
               onChange={(e) => {
                 const value = e.target.value;
                 setCategory(value);
-               onSearch?.({ text: searchInput, category: value, status });
+                onSearch?.({ text: searchInput, category: value, status });
               }}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 text-base appearance-none bg-no-repeat bg-[right_1.25rem_center] bg-[length:1.5rem] focus:border-black focus:outline-none transition"
               style={{
@@ -87,38 +91,14 @@ export const RetailerSearch = ({ darkMode, onSearch }) => {
             </select>
           </div>
 
-          {/* <div className="flex-1">
-            <h4 className="text-white">Status</h4>
-            <select
-              defaultValue=""
-              value={status}
-              onChange={(e) => {
-                const value = e.target.value;
-                setStatus(value);
-               onSearch?.({ text: searchInput, category, status: value });
-              }}
-              className="w-full px-4 py-2 rounded-lg border border-gray-300 text-base appearance-none bg-no-repeat bg-[right_1.25rem_center] bg-[length:1.5rem] focus:border-black focus:outline-none transition"
-              style={{
-                backgroundImage: `url("data:image/svg+xml;utf8,<svg fill='black' height='14' viewBox='0 0 24 24' width='14' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>")`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "right 5px center",
-                backgroundSize: "18px",
-              }}
-            >
-              <option value="" disabled hidden>
-                Select
-              </option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-            </select>
-          </div> */}
           {/* </div> */}
-          <div className="flex flex-1 justify-center bg-purple-700  border-none max-w-[12rem] cursor-pointer items-center gap-3 px-4 py-3 rounded-lg w-full">
+          <div className="flex flex-1 max-w-[12rem] w-full">
             <button
               type="submit"
               onClick={handleSearchClick}
-              className="bg-purple-700  text-white border-none font-extrabold shadow-md"
+              className={`w-full flex justify-center items-center gap-3 px-4 py-3 rounded-lg text-white font-extrabold shadow-md border-none
+                ${darkMode ? "bg-purple-700" : "bg-[rgba(0,103,216,0.8)]"}
+              `}
             >
               Search
             </button>
