@@ -10,6 +10,7 @@ const menuItems = [
   { name: "Dealer", path: "/dealer" },
   { name: "Retailer", path: "/retailer" },
   { name: "Sign In", path: "/signin" },
+  { name: "Transaction History", path: "/transactions"},
   { name: "Sign Up", path: "/signup" },
 ];
 
