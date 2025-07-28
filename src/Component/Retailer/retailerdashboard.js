@@ -11,7 +11,7 @@ export const RetailerTable = ({ darkMode, searchTerm }) => {
       const res = await axios.get("https://api.mobilexecure.com/vendors/", {
         params: {
           page: 1,
-          size: 10000, // fetch all
+          size: 10000,
           sort: "-createddate",
           dealer: 4000782,
           admin: true,
@@ -74,7 +74,9 @@ export const RetailerTable = ({ darkMode, searchTerm }) => {
   );
 
   return (
-    <div className="flex flex-col p-5 bg-white rounded-lg shadow-md w-full mx-auto xl:max-w-[1150px]">
+ <div className="flex flex-col p-5 bg-white rounded-lg shadow-md w-full mx-auto 
+  max-w-full sm:max-w-[95%] md:max-w-[90%] lg:max-w-[1020px] xl:max-w-[1020px] 2xl:max-w-none">
+
       {/* Header & Pagination */}
       <div className="flex justify-between items-center flex-wrap mb-2">
         <p className="flex-1 text-[3vw] sm:text-[2.5vw] md:text-[2vw] lg:text-xl font-bold line-clamp-1">
@@ -154,7 +156,7 @@ export const RetailerTable = ({ darkMode, searchTerm }) => {
               ].map((header) => (
                 <th
                   key={header}
-                  className="w-[120px] max-w-[120px] truncate text-left text-xs bg-gray-100 font-semibold px-4 py-3 border-b border-gray-300"
+                  className="min-w-[120px] max-w-[160px] truncate text-left text-xs bg-gray-100 font-semibold px-4 py-3 border-b border-gray-300"
                 >
                   {header === "ID" ? (
                     <div className="flex items-center gap-2">

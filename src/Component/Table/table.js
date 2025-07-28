@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import axios from "axios";
 
 export default function Tables({ darkMode }) {
   const [data, setData] = useState([]);
@@ -6,9 +7,18 @@ export default function Tables({ darkMode }) {
   const rowsPerPage = 10;
 
   useEffect(() => {
-    fetch("https://dummyjson.com/users?limit=100")
-      .then((res) => res.json())
-      .then((json) => setData(json.users));
+    axios
+      .get("https://api.mobilexecure.com/vendors/", {
+        params: {
+          page: 1,
+          size: 10000,
+          sort: "-createddate",
+          dealer: 4000782,
+          admin: true,
+        },
+      })
+      .then((res) => setData(res.data.items || []))
+      .catch((err) => console.error("Error fetching vendor data:", err));
   }, []);
 
   const totalPages = Math.ceil(data.length / rowsPerPage);
@@ -21,60 +31,96 @@ export default function Tables({ darkMode }) {
       : "bg-white/60 text-[#1A237E] border-[#1A237E]/30"} 
     backdrop-blur-2xl shadow-[0_8px_20px_rgba(0,0,0,0.2)] transition-all`;
 
-  const headerCell = "px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider";
-  const rowCell = "px-6 py-4 whitespace-nowrap";
+  const headerCell = "px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider border-b";
+  const rowCell = "px-4 py-3 border-b whitespace-nowrap text-sm";
 
-  const getButtonClasses = (isActive, disabled = false) => {
-    return `
-      flex justify-center items-center px-4 py-2 rounded-lg w-full sm:w-auto transition-all duration-300
-      ${darkMode
+  const getButtonClasses = (isActive, disabled = false) => `
+    flex justify-center items-center px-4 py-2 rounded-lg w-full sm:w-auto transition-all duration-300
+    ${
+      darkMode
         ? disabled
           ? "opacity-50 cursor-not-allowed text-gray-400 font-semibold"
           : isActive
-            ? "bg-purple-700 text-white font-semibold"
-            : "text-gray-400 hover:bg-purple-700 hover:text-white font-medium"
+          ? "bg-purple-700 text-white font-semibold"
+          : "text-gray-400 hover:bg-purple-700 hover:text-white font-medium"
         : disabled
-          ? "opacity-50 cursor-not-allowed text-[#1A237E] font-medium"
-          : isActive
-            ? "bg-[rgba(0,103,216,0.8)] text-white font-semibold"
-            : "text-[#1A237E] hover:bg-[rgba(0,103,216,0.8)] hover:text-white font-medium"
-      }
-    `;
-  };
+        ? "opacity-50 cursor-not-allowed text-[#1A237E] font-medium"
+        : isActive
+        ? "bg-[rgba(0,103,216,0.8)] text-white font-semibold"
+        : "text-[#1A237E] hover:bg-[rgba(0,103,216,0.8)] hover:text-white font-medium"
+    }
+  `;
 
   return (
     <div className="ml-4 md:ml-[16.5rem] xl:ml-[19rem] mt-4 mr-4">
       <section className="grid grid-cols-1 gap-6 mb-6">
         <div className={containerClasses}>
-          <h2 className="text-2xl font-semibold mb-6 text-center">Customer Directory</h2>
+          <h2 className="text-2xl font-semibold mb-6 text-center">Dealer Summary</h2>
           <div className="overflow-x-auto rounded-lg scrollbar-custom">
-            <table className="min-w-full">
+            <table className="min-w-[1000px] w-full">
               <thead
-                className={`sticky top-0 z-10 backdrop-blur ${darkMode ? "bg-purple-700 text-white" : "bg-[rgba(0,103,216,0.8)] text-white"
-                  }`}
+                className={`sticky top-0 z-10 backdrop-blur ${
+                  darkMode ? "bg-purple-700 text-white" : "bg-[rgba(0,103,216,0.8)] text-white"
+                }`}
               >
                 <tr>
-                  <th className={headerCell}>Name</th>
-                  <th className={headerCell}>Email</th>
-                  <th className={headerCell}>Phone</th>
-                  <th className={headerCell}>Company</th>
+                  {[
+                    "ID", "Owner Name", "Shop Name", "Phone", "Email", "Location", "PAN",
+                    "Aadhar", "Pincode", "Units", "Remaining", "Vendor Code", "Created Date"
+                  ].map((header) => (
+                    <th key={header} className={headerCell}>
+                      {header === "ID" ? (
+                        <div className="flex items-center gap-2">
+                          <input type="checkbox" />
+                          <label>{header}</label>
+                        </div>
+                      ) : (
+                        header
+                      )}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody className={`${darkMode ? "divide-white/20" : "divide-[#1A237E]/30"} divide-y`}>
-                {paginatedData.map((user, i) => (
-                  <tr
-                    key={user.id}
-                    className={`transition ${darkMode
-                        ? `${i % 2 === 0 ? "bg-white/10" : "bg-white/5"} hover:bg-white/20`
-                        : `${i % 2 === 0 ? "bg-white/40" : "bg-white/60"} hover:bg-white/80`
+                {paginatedData.length > 0 ? (
+                  paginatedData.map((row, index) => (
+                    <tr
+                      key={row.id}
+                      className={`transition ${
+                        darkMode
+                          ? `${index % 2 === 0 ? "bg-white/10" : "bg-white/5"} hover:bg-white/20`
+                          : `${index % 2 === 0 ? "bg-white/40" : "bg-white/60"} hover:bg-white/80`
                       }`}
-                  >
-                    <td className={rowCell}>{user.firstName} {user.lastName}</td>
-                    <td className={rowCell}>{user.email}</td>
-                    <td className={rowCell}>{user.phone}</td>
-                    <td className={rowCell}>{user.company?.name || "N/A"}</td>
+                    >
+                      <td className={rowCell}>
+                        <div className="flex items-center gap-2">
+                          <input type="checkbox" />
+                          <span>{index + 1 + (currentPage - 1) * rowsPerPage}</span>
+                        </div>
+                      </td>
+                      <td className={rowCell}>{row.ownerName}</td>
+                      <td className={rowCell}>{row.shopName}</td>
+                      <td className={rowCell}>{row.phoneNumber}</td>
+                      <td className={rowCell}>{row.email}</td>
+                      <td className={rowCell}>{row.location}</td>
+                      <td className={rowCell}>{row.PAN}</td>
+                      <td className={rowCell}>{row.Aadhar}</td>
+                      <td className={rowCell}>{row.pincode}</td>
+                      <td className={rowCell}>{row.units}</td>
+                      <td className={rowCell}>{row.remaining}</td>
+                      <td className={rowCell}>{row.vendorCode}</td>
+                      <td className={rowCell}>
+                        {row.createddate ? new Date(row.createddate).toLocaleDateString() : "—"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="13" className="text-center py-4 text-gray-500">
+                      No data found.
+                    </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
@@ -84,18 +130,14 @@ export default function Tables({ darkMode }) {
             {/* Left side: First & Prev */}
             <div className="flex flex-row sm:flex-row gap-2 sm:w-auto">
               <button
-                onClick={() => {
-                  if (currentPage > 1) setCurrentPage(1);
-                }}
+                onClick={() => currentPage > 1 && setCurrentPage(1)}
                 className={getButtonClasses(currentPage === 1, currentPage === 1)}
               >
                 <span className="block sm:hidden">«</span>
                 <span className="hidden sm:block">First</span>
               </button>
               <button
-                onClick={() => {
-                  if (currentPage > 1) setCurrentPage((prev) => prev - 1);
-                }}
+                onClick={() => currentPage > 1 && setCurrentPage((prev) => prev - 1)}
                 className={getButtonClasses(false, currentPage === 1)}
               >
                 <span className="block sm:hidden">‹</span>
@@ -111,18 +153,14 @@ export default function Tables({ darkMode }) {
             {/* Right side: Next & Last */}
             <div className="flex flex-row sm:flex-row gap-2 sm:w-auto">
               <button
-                onClick={() => {
-                  if (currentPage < totalPages) setCurrentPage((prev) => prev + 1);
-                }}
+                onClick={() => currentPage < totalPages && setCurrentPage((prev) => prev + 1)}
                 className={getButtonClasses(false, currentPage === totalPages)}
               >
                 <span className="block sm:hidden">›</span>
                 <span className="hidden sm:block">Next</span>
               </button>
               <button
-                onClick={() => {
-                  if (currentPage < totalPages) setCurrentPage(totalPages);
-                }}
+                onClick={() => currentPage < totalPages && setCurrentPage(totalPages)}
                 className={getButtonClasses(currentPage === totalPages, currentPage === totalPages)}
               >
                 <span className="block sm:hidden">»</span>

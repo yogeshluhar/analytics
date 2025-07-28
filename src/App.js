@@ -10,7 +10,7 @@ import { useEffect, useState } from "react";
 import Grid from "./Component/Header/bentogrid";
 import Header from "./Component/Header/header";
 import Sidebar from "./Component/Header/sidebar";
-import TablesPage from "./Component/Table/table";
+
 import Tables from "./Component/Table/table";
 import Billing from "./Component/Billed/Invoice";
 import Profile from "./Component/Profile/profile";
@@ -20,6 +20,8 @@ import VerifyOTP from "./Component/Auth/VerifyOtp";
 import Dashboard from "./Component/DashBoard/dashboard";
 import Dealer from "./Component/Dealer/dealer";
 import Retailer from "./Component/Retailer/retailer";
+import { TransactionTable } from './Component/Dealer/transactionhistory';
+
 
 function App() {
   const [open, setOpen] = useState(false);
@@ -51,7 +53,8 @@ function App() {
             setDarkMode={setDarkMode}
           />
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Grid darkMode={darkMode}/>} />
+            <Route path="/transactions" element={<TransactionTable darkMode={darkMode} />} />
             <Route path="/tables" element={<Tables darkMode={darkMode} />} />
             <Route path="/billing" element={<Billing darkMode={darkMode} />} />
             <Route path="/profile" element={<Profile darkMode={darkMode} />} />

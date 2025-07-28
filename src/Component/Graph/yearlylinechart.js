@@ -1,14 +1,58 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Chart from "react-apexcharts";
+import axios from "axios";
 import "../StyleSheet/style.css";
 
 const YearlyLineChart = ({ darkMode }) => {
-  const series = [
+  const [series, setSeries] = useState([
     {
       name: "Sales",
-      data: [300, 400, 350, 500, 490, 600, 700, 820, 910, 1000, 1100, 1200],
+      data: [],
     },
+  ]);
+
+  const categories = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
   ];
+
+  useEffect(() => {
+    const fetchYearlyData = async () => {
+      try {
+        const res = await axios.get("https://api.mobilexecure.com/dealers/analytics/4000782");
+        const dayWise = res.data?.dayWise || {};
+
+        const monthMap = {
+          Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+          Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+        };
+
+        const monthlyTotals = new Array(12).fill(0);
+
+        for (const date in dayWise) {
+          const parts = date.split(" "); // ["28", "Jun", "25"]
+          const monthStr = parts[1]; // "Jun"
+          const value = dayWise[date];
+
+          const monthIndex = monthMap[monthStr];
+          if (monthIndex !== undefined) {
+            monthlyTotals[monthIndex] += value;
+          }
+        }
+
+        setSeries([
+          {
+            name: "Sales",
+            data: monthlyTotals,
+          },
+        ]);
+      } catch (error) {
+        console.error("YearlyLineChart API Error:", error);
+      }
+    };
+
+    fetchYearlyData();
+  }, []);
 
   const options = {
     chart: {
@@ -29,10 +73,7 @@ const YearlyLineChart = ({ darkMode }) => {
       },
     },
     xaxis: {
-      categories: [
-        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-      ],
+      categories,
       labels: {
         style: {
           colors: darkMode ? "#ffffff" : "#333333",

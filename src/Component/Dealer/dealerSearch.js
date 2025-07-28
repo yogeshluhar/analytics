@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const DealerSearch = ({ darkMode, onSearch }) => {
   const [searchInput, setSearchInput] = useState("");
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState("");
+  const navigate = useNavigate();
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -27,17 +29,35 @@ export const DealerSearch = ({ darkMode, onSearch }) => {
     <>
       <div className="m-1 p-4 ">
         {/* Upper Filter */}
-        <div className="flex justify-between items-center mb-5">
-          <div className="text-2xl font-bold m-0">
-            <h4 style={{ margin: "0px", color: "white" }}>Order</h4>
+        <div className="flex justify-between items-center mb-5 flex-wrap gap-3">
+          {/* Heading */}
+          <div className="text-2xl font-bold">
+            <h4 style={{ margin: 0, color: "white" }}>Order</h4>
           </div>
-          <div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 flex-wrap">
+            {/* Create Order Button */}
             <button
-              className={`h-10  text-white font-semibold border-none shadow-md cursor-pointer  flex items-center gap-3 px-4 py-3 rounded-lg w-full
-                   ${darkMode ? "bg-purple-700" : "bg-[rgba(0,103,216,0.8)]"}
-              `}
+              className={`h-10 text-white font-semibold border-none shadow-md cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg w-full sm:w-auto
+        ${darkMode ? "bg-purple-700" : "bg-[rgba(0,103,216,0.8)]"}
+      `}
             >
-              create order
+              Create Order
+            </button>
+
+            {/* Transaction History Button */}
+            <button
+              onClick={() => navigate("/transactions")}
+              className={`h-10 text-white font-semibold border-none shadow-md cursor-pointer flex items-center gap-3 px-4 py-3 rounded-lg w-full sm:w-auto
+        ${
+          darkMode
+            ? "bg-pink-700 hover:bg-pink-800"
+            : "bg-pink-600 hover:bg-pink-700"
+        }
+      `}
+            >
+              Transaction History
             </button>
           </div>
         </div>

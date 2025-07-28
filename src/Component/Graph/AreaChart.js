@@ -1,26 +1,62 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
+import axios from "axios";
 import ChartFilterButtons from "../Reusable/filterbutton";
 
 const AreaChart = ({ darkMode }) => {
   const [filter, setFilter] = useState("month");
+  const [chartData, setChartData] = useState({ categories: [], values: [] });
+  const [loading, setLoading] = useState(true);
 
-  const dataMap = {
-    month: {
-      categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      values: [100, 200, 150, 300, 250, 400],
-    },
-    week: {
-      categories: ["Week 1", "Week 2", "Week 3", "Week 4"],
-      values: [60, 90, 50, 120],
-    },
-    day: {
-      categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      values: [25, 45, 30, 60, 55, 40, 35],
-    },
-  };
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      setLoading(true);
+      try {
+        const res = await axios.get(
+          "https://api.mobilexecure.com/dealers/analytics/4000782"
+        );
+        const data = res.data.dayWise;
 
-  const chartData = dataMap[filter] || { categories: [], values: [] };
+        const allDates = Object.keys(data);
+        const allValues = Object.values(data);
+
+        let filtered = { categories: [], values: [] };
+
+        if (filter === "day") {
+          const last7 = allDates.slice(-7);
+          filtered = {
+            categories: last7,
+            values: last7.map(date => data[date]),
+          };
+        } else if (filter === "week") {
+          const last28 = allDates.slice(-28);
+          const weekChunks = [];
+          for (let i = 0; i < last28.length; i += 7) {
+            const week = last28.slice(i, i + 7);
+            const weekSum = week.reduce((sum, date) => sum + data[date], 0);
+            weekChunks.push({ week: `Week ${i / 7 + 1}`, value: weekSum });
+          }
+          filtered = {
+            categories: weekChunks.map(w => w.week),
+            values: weekChunks.map(w => w.value),
+          };
+        } else if (filter === "month") {
+          filtered = {
+            categories: allDates,
+            values: allValues,
+          };
+        }
+
+        setChartData(filtered);
+      } catch (err) {
+        console.error("Failed to fetch analytics", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAnalytics();
+  }, [filter]);
 
   const options = {
     chart: {
@@ -46,6 +82,7 @@ const AreaChart = ({ darkMode }) => {
         style: {
           colors: darkMode ? "#fff" : "#333",
         },
+        rotate: -45,
       },
     },
     yaxis: {
@@ -86,8 +123,8 @@ const AreaChart = ({ darkMode }) => {
 
   const series = [
     {
-      name: "Revenue",
-      data: Array.isArray(chartData.values) ? chartData.values : [],
+      name: "Total Sold",
+      data: chartData.values,
     },
   ];
 
@@ -98,13 +135,11 @@ const AreaChart = ({ darkMode }) => {
         onChange={setFilter}
         darkMode={darkMode}
       />
-      <Chart
-        options={options}
-        series={series}
-        type="area"
-        height={300}
-        width="100%"
-      />
+      {loading ? (
+        <p className="text-center text-gray-500">Loading chart...</p>
+      ) : (
+        <Chart options={options} series={series} type="area" height={300} width="100%" />
+      )}
     </div>
   );
 };

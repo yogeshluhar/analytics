@@ -14,7 +14,7 @@ const Dealer = ({darkMode}) => {
    };
    return (
      <>
-       <div className="ml-4 md:ml-[16.5rem] xl:ml-[19rem] mt-[1rem] mr-4 mb-5  ">
+       <div className="ml-4 md:ml-[16.5rem] xl:ml-[19rem] mt-[1rem] mr-4 mb-5 ">
          <DealerSearch darkMode={darkMode} onSearch={handleSearch} />
          <DealerTable darkMode={darkMode} searchTerm={searchTerm} />
        </div>

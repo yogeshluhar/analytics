@@ -1,76 +1,149 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
+import axios from "axios";
 import ChartFilterButtons from "../Reusable/filterbutton";
 
 const BarChart = ({ darkMode }) => {
   const [filter, setFilter] = useState("month");
+  const [categories, setCategories] = useState([]);
+  const [series, setSeries] = useState([]);
 
-  const dataMap = {
-    month: {
-      categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      values: [120, 150, 110, 160, 180, 140],
-    },
-    week: {
-      categories: ["Week 1", "Week 2", "Week 3", "Week 4"],
-      values: [40, 55, 35, 70],
-    },
-    day: {
-      categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      values: [25, 45, 35, 50, 65, 30, 40],
-    },
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(
+          "https://api.mobilexecure.com/dealers/analytics/4000782"
+        );
+        const { dayVendorWise = {} } = res.data;
 
-  const chartData = dataMap[filter] || { categories: [], values: [] };
+        const dateKeys = Object.keys(dayVendorWise).sort(
+          (a, b) => new Date(a) - new Date(b)
+        );
+        const vendorSet = new Set();
 
-  const options = {
+        // Collect all vendors
+        dateKeys.forEach((date) => {
+          Object.keys(dayVendorWise[date]).forEach((vendor) =>
+            vendorSet.add(vendor)
+          );
+        });
+
+        const vendors = Array.from(vendorSet);
+        const vendorData = {};
+
+        if (filter === "day") {
+          vendors.forEach((vendor) => {
+            vendorData[vendor] = dateKeys.map(
+              (date) => dayVendorWise[date]?.[vendor] || 0
+            );
+          });
+          setCategories(dateKeys);
+        }
+
+        else if (filter === "week") {
+          const weekChunks = [];
+          for (let i = 0; i < dateKeys.length; i += 7) {
+            weekChunks.push(dateKeys.slice(i, i + 7));
+          }
+
+          vendors.forEach((vendor) => {
+            vendorData[vendor] = weekChunks.map((chunk) =>
+              chunk.reduce((sum, date) => sum + (dayVendorWise[date]?.[vendor] || 0), 0)
+            );
+          });
+
+          const weekLabels = weekChunks.map((_, i) => `Week ${i + 1}`);
+          setCategories(weekLabels);
+        }
+
+        else if (filter === "month") {
+          const monthChunks = {};
+          dateKeys.forEach((date) => {
+            const [_, mon, yr] = date.split(" "); // e.g. "28 Jun 25"
+            const key = `${mon} ${yr}`;
+            if (!monthChunks[key]) monthChunks[key] = [];
+            monthChunks[key].push(date);
+          });
+
+          const monthKeys = Object.keys(monthChunks);
+
+          vendors.forEach((vendor) => {
+            vendorData[vendor] = monthKeys.map((month) =>
+              monthChunks[month].reduce(
+                (sum, date) => sum + (dayVendorWise[date]?.[vendor] || 0),
+                0
+              )
+            );
+          });
+
+          setCategories(monthKeys);
+        }
+
+        const chartSeries = vendors.map((vendor) => ({
+          name: vendor,
+          data: vendorData[vendor],
+        }));
+
+        setSeries(chartSeries);
+      } catch (err) {
+        console.error("BarChart API Error:", err);
+        setCategories([]);
+        setSeries([]);
+      }
+    };
+
+    fetchData();
+  }, [filter]);
+
+  const chartOptions = {
     chart: {
-      id: "bar-chart",
+      type: "bar",
+      stacked: true,
       background: "transparent",
       foreColor: darkMode ? "#ffffff" : "#333333",
       toolbar: {
         show: true,
-        tools: {
-          download: true,
-          selection: true,
-          zoom: true,
-          zoomin: true,
-          zoomout: true,
-          pan: true,
-          reset: true,
-        },
+      },
+    },
+    plotOptions: {
+      bar: {
+        horizontal: false,
+        borderRadius: 4,
+        columnWidth: "60%",
       },
     },
     xaxis: {
-      categories: chartData.categories,
+      categories,
       labels: { style: { colors: darkMode ? "#ffffff" : "#333333" } },
     },
     yaxis: {
       labels: { style: { colors: darkMode ? "#ffffff" : "#333333" } },
     },
-    colors: [darkMode ? "#a855f7" : "#0067D8"],
+    colors: [
+      "#FF6384", "#36A2EB", "#FFCE56", "#10B981", "#8B5CF6", "#F59E0B",
+      "#EF4444", "#3B82F6", "#EC4899", "#22C55E", "#6366F1", "#EAB308",
+    ],
     dataLabels: {
-      enabled: true,
-      style: {
-        colors: [darkMode ? "#ffffff" : "#ffffff"],
+      enabled: false,
+    },
+    legend: {
+      position: "bottom",
+      labels: {
+        colors: darkMode ? "#ffffff" : "#333333",
       },
     },
+    tooltip: {
+      theme: darkMode ? "dark" : "light",
+    },
     title: {
-      text: `Bar Chart (${filter})`,
+      text: `Vendor-wise Sales (${filter})`,
       align: "center",
       style: {
         color: darkMode ? "#ffffff" : "#1A237E",
         fontSize: "16px",
       },
     },
-    tooltip: {
-      theme: darkMode ? "dark" : "light",
-    },
-    theme: {
-      mode: darkMode ? "dark" : "light",
-    },
   };
-
-  const series = [{ name: "Sales", data: chartData.values || [] }];
 
   return (
     <div className="flex flex-col-reverse md:flex-col xl:flex-col gap-4">
@@ -79,13 +152,7 @@ const BarChart = ({ darkMode }) => {
         onChange={setFilter}
         darkMode={darkMode}
       />
-      <Chart
-        options={options}
-        series={series}
-        type="bar"
-        height={300}
-        width="100%"
-      />
+      <Chart options={chartOptions} series={series} type="bar" height={550} />
     </div>
   );
 };

@@ -1,26 +1,55 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Chart from "react-apexcharts";
+import axios from "axios";
 import ChartFilterButtons from "../Reusable/filterbutton";
 
 const LineChart = ({ darkMode }) => {
   const [filter, setFilter] = useState("month");
+  const [chartData, setChartData] = useState({ categories: [], values: [] });
 
-  const dataMap = {
-    month: {
-      categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-      values: [100, 120, 90, 150, 130, 170],
-    },
-    week: {
-      categories: ["Week 1", "Week 2", "Week 3", "Week 4"],
-      values: [40, 60, 30, 75],
-    },
-    day: {
-      categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      values: [22, 44, 36, 52, 61, 34, 45],
-    },
-  };
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(
+          "https://api.mobilexecure.com/dealers/analytics/4000782"
+        );
+        const { dayWise = {} } = res.data;
 
-  const chartData = dataMap[filter] || { categories: [], values: [] };
+        const dates = Object.keys(dayWise);
+        const values = Object.values(dayWise);
+
+        if (filter === "day") {
+          setChartData({ categories: dates, values });
+        } else if (filter === "week") {
+          const weekChunks = [];
+          for (let i = 0; i < values.length; i += 7) {
+            const chunk = values.slice(i, i + 7);
+            weekChunks.push(chunk.reduce((sum, v) => sum + v, 0));
+          }
+
+          const categories = weekChunks.map((_, i) => `Week ${i + 1}`);
+          setChartData({ categories, values: weekChunks });
+        } else if (filter === "month") {
+          const monthMap = {};
+          dates.forEach((date, i) => {
+            const parts = date.split(" "); // "28 Jun 25"
+            const month = parts[1];
+            monthMap[month] = (monthMap[month] || 0) + values[i];
+          });
+
+          const categories = Object.keys(monthMap);
+          const valuesByMonth = Object.values(monthMap);
+
+          setChartData({ categories, values: valuesByMonth });
+        }
+      } catch (error) {
+        console.error("LineChart fetch error:", error);
+        setChartData({ categories: [], values: [] });
+      }
+    };
+
+    fetchData();
+  }, [filter]);
 
   const options = {
     chart: {
@@ -81,10 +110,6 @@ const LineChart = ({ darkMode }) => {
       data: Array.isArray(chartData.values) ? chartData.values : [],
     },
   ];
-
-  console.log("Filter:", filter);
-  console.log("ChartData:", chartData);
-  console.log("Series Data:", series);
 
   return (
     <div className="flex flex-col-reverse md:flex-col xl:flex-col gap-4">
