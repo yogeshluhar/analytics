@@ -8,12 +8,12 @@ export const RetailerTable = ({ darkMode, searchTerm }) => {
 
   const fetchAllData = async () => {
     try {
-      const res = await axios.get("https://api.mobilexecure.com/vendors/", {
+      const res = await axios.get("https://api.mobilexecure.com/customers/", {
         params: {
           page: 1,
           size: 10000,
           sort: "-createddate",
-          dealer: 4000782,
+          vendor: 4000782,
           admin: true,
         },
       });
@@ -74,13 +74,14 @@ export const RetailerTable = ({ darkMode, searchTerm }) => {
   );
 
   return (
- <div className="flex flex-col p-5 bg-white rounded-lg shadow-md w-full mx-auto 
-  max-w-full sm:max-w-[95%] md:max-w-[90%] lg:max-w-[1020px] xl:max-w-[1020px] 2xl:max-w-none">
-
+    <div
+      className="flex flex-col p-5 bg-white rounded-lg shadow-md w-full mx-auto 
+      max-w-full sm:max-w-[95%] md:max-w-[90%] lg:max-w-[1020px] xl:max-w-[1020px] 2xl:max-w-none"
+    >
       {/* Header & Pagination */}
       <div className="flex justify-between items-center flex-wrap mb-2">
         <p className="flex-1 text-[3vw] sm:text-[2.5vw] md:text-[2vw] lg:text-xl font-bold line-clamp-1">
-          Dealer Summary
+          Retailer Info
         </p>
         <div className="flex items-center gap-2">
           <label className="text-sm text-gray-600 font-semibold">Show</label>
@@ -93,13 +94,6 @@ export const RetailerTable = ({ darkMode, searchTerm }) => {
             <option value="10">10</option>
             <option value="20">20</option>
           </select>
-          <button
-            className={`h-[2.2rem] border-none px-4 rounded-lg text-white text-[13px] font-semibold shadow-md hover:shadow-lg transition
-             ${darkMode ? "bg-purple-700" : "bg-[rgba(0,103,216,0.8)]"}
-             `}
-          >
-            Dispatch
-          </button>
         </div>
         <div className="ml-2 flex flex-wrap items-center justify-center gap-1.5 mt-4 sm:mt-0">
           <button
@@ -141,22 +135,19 @@ export const RetailerTable = ({ darkMode, searchTerm }) => {
             <tr>
               {[
                 "ID",
-                "Owner Name",
-                "Shop Name",
-                "Phone",
+                "Customer Name",
                 "Email",
-                "Location",
-                "PAN",
-                "Aadhar",
-                "Pincode",
-                "Units",
-                "Remaining",
-                "Vendor Code",
+                "Dealer ID",
+                "Vendor ID",
+                "IMEI 1",
+                "IMEI 2",
+                "Phone",
                 "Created Date",
+                "Updated Date",
               ].map((header) => (
                 <th
                   key={header}
-                  className="min-w-[120px] max-w-[160px] truncate text-left text-xs bg-gray-100 font-semibold px-4 py-3 border-b border-gray-300"
+                  className="min-w-[120px] max-w-[180px] truncate text-left text-xs bg-gray-100 font-semibold px-4 py-3 border-b border-gray-300"
                 >
                   {header === "ID" ? (
                     <div className="flex items-center gap-2">
@@ -170,59 +161,55 @@ export const RetailerTable = ({ darkMode, searchTerm }) => {
               ))}
             </tr>
           </thead>
+
           <tbody>
             {paginatedData.length > 0 ? (
               paginatedData.map((row, index) => (
-                <tr key={row.id} className="bg-gray-50 hover:bg-gray-100">
+                <tr key={row._id} className="bg-gray-50 hover:bg-gray-100">
                   <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
                     <div className="flex items-center gap-2">
                       <input type="checkbox" />
                       <span>{index + 1}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.ownerName}
+                  <td className="px-4 py-3 border-b text-sm">
+                    {row.customerName  || "-"}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.shopName}
+                  <td className="px-4 py-3 border-b text-sm">
+                    {row.email || "-"}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.phoneNumber}
+                  <td className="px-4 py-3 border-b text-sm">
+                    {row.dealerId || "-"}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.email}
+                  <td className="px-4 py-3 border-b text-sm">
+                    {row.vendorId || "-"}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.location}
+                  <td className="px-4 py-3 border-b text-sm">
+                    {row.imei1 || "-"}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.PAN}
+                  <td className="px-4 py-3 border-b text-sm">
+                    {row.imei2 || "-"}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.Aadhar}
+                  <td className="px-4 py-3 border-b text-sm">
+                    {row.phoneNumber || "-"}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.pincode}
+                  <td className="px-4 py-3 border-b text-sm">
+                    {row.createddate
+                      ? new Date(row.createddate).toLocaleString()
+                      : "-"}
                   </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.units}
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.remaining}
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {row.vendorCode}
-                  </td>
-                  <td className="px-4 py-3 border-b border-gray-300 text-left text-sm">
-                    {new Date(row.createddate).toLocaleDateString()}
+                  <td className="px-4 py-3 border-b text-sm">
+                    {row.updatedate
+                      ? new Date(row.updatedate).toLocaleString()
+                      : "-"}
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td
-                  colSpan={13}
-                  className="px-4 py-3 border-b border-gray-300 text-center text-sm"
+                  colSpan={10}
+                  className="px-4 py-3 border-b text-center text-sm"
                 >
                   No data found.
                 </td>
