@@ -1,10 +1,6 @@
 import "./App.css";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom";
+import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 
 import Grid from "./Component/Header/bentogrid";
@@ -17,11 +13,10 @@ import Profile from "./Component/Profile/profile";
 import SignUp from "./Component/Auth/SignUp";
 import SignIn from "./Component/Auth/Signin";
 import VerifyOTP from "./Component/Auth/VerifyOtp";
-import Dashboard from "./Component/DashBoard/dashboard";
 import Dealer from "./Component/Dealer/dealer";
 import Retailer from "./Component/Retailer/retailer";
-import { TransactionTable } from './Component/Dealer/transactionhistory';
-
+import { TransactionTable } from "./Component/Dealer/transactionhistory";
+import Welcome from "./Component/Auth/Welcome";
 
 function App() {
   const [open, setOpen] = useState(false);
@@ -30,54 +25,108 @@ function App() {
     return saved !== null ? JSON.parse(saved) : true;
   });
 
+  const location = useLocation();
+  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+
+  // 👇 yeh pages me Header/Sidebar nahi chahiye
+  const hideSidebarHeader = ["/", "/signin", "/signup"];
+
   useEffect(() => {
     document.body.style.background = darkMode
       ? "url('/background-1.jpg') no-repeat top fixed"
       : "url('/windows 11.jpg') no-repeat top fixed";
     document.body.style.backgroundSize = "cover";
     document.body.style.overflow = open ? "hidden" : "auto";
-
-    // Save to localStorage
     localStorage.setItem("darkMode", JSON.stringify(darkMode));
   }, [darkMode, open]);
 
   return (
-    <Router>
-      <div className="flex  min-h-screen">
+    <div className="flex min-h-screen">
+      {!hideSidebarHeader.includes(location.pathname) && (
         <Sidebar open={open} setOpen={setOpen} darkMode={darkMode} />
-        <div className="flex-1 ">
+      )}
+
+      <div className="flex-1">
+        {!hideSidebarHeader.includes(location.pathname) && (
           <Header
             open={open}
             setOpen={setOpen}
             darkMode={darkMode}
             setDarkMode={setDarkMode}
           />
-          <Routes>
-            <Route path="/" element={<Grid darkMode={darkMode}/>} />
-            <Route path="/transactions" element={<TransactionTable darkMode={darkMode} />} />
-            <Route path="/tables" element={<Tables darkMode={darkMode} />} />
-            <Route path="/billing" element={<Billing darkMode={darkMode} />} />
-            <Route path="/profile" element={<Profile darkMode={darkMode} />} />
-            <Route
-              path="/signin"
-              element={<SignIn darkMode={darkMode} setDarkMode={setDarkMode} />}
-            />
-            <Route
-              path="/signup"
-              element={<SignUp darkMode={darkMode} setDarkMode={setDarkMode} />}
-            />
-            <Route
-              path="/verify"
-              element={
-                <VerifyOTP darkMode={darkMode} setDarkMode={setDarkMode} />
-              }
-            />
-            <Route path="/dealer" element={<Dealer darkMode={darkMode} />} />
-            <Route path="/retailer" element={<Retailer darkMode={darkMode} />} />
-          </Routes>
-        </div>
+        )}
+
+        <Routes>
+          {/* Public Routes */}
+          <Route
+            path="/"
+            element={<Welcome darkMode={darkMode} setDarkMode={setDarkMode} />}
+          />
+          <Route
+            path="/signin"
+            element={<SignIn darkMode={darkMode} setDarkMode={setDarkMode} />}
+          />
+          <Route
+            path="/signup"
+            element={<SignUp darkMode={darkMode} setDarkMode={setDarkMode} />}
+          />
+          <Route
+            path="/verify"
+            element={
+              <VerifyOTP darkMode={darkMode} setDarkMode={setDarkMode} />
+            }
+          />
+
+          {/* Private Routes (only if login) */}
+          <Route
+            path="/dashboard"
+            element={
+              isAuthenticated ? <Grid darkMode={darkMode} /> : <Welcome />
+            }
+          />
+          <Route
+            path="/tables"
+            element={
+              isAuthenticated ? <Tables darkMode={darkMode} /> : <Welcome />
+            }
+          />
+          <Route
+            path="/billing"
+            element={
+              isAuthenticated ? <Billing darkMode={darkMode} /> : <Welcome />
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              isAuthenticated ? <Profile darkMode={darkMode} /> : <Welcome />
+            }
+          />
+          <Route
+            path="/dealer"
+            element={
+              isAuthenticated ? <Dealer darkMode={darkMode} /> : <Welcome />
+            }
+          />
+          <Route
+            path="/retailer"
+            element={
+              isAuthenticated ? <Retailer darkMode={darkMode} /> : <Welcome />
+            }
+          />
+          <Route
+            path="/transactions"
+            element={
+              isAuthenticated ? (
+                <TransactionTable darkMode={darkMode} />
+              ) : (
+                <Welcome />
+              )
+            }
+          />
+        </Routes>
       </div>
-    </Router>
+    </div>
   );
 }
 
